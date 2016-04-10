@@ -27,9 +27,10 @@ class Downloader {
     /**
      * Fetch video info
      * @param string $videoid
+     * @param string $requireType
      * @return boolean|string
      */
-    public function fetchVideoInfo($videoid) {
+    public function fetchVideoInfo($videoid, $requireType = '') {
         $videoInfo = $this->getInfo($videoid);
         $status = $url_encoded_fmt_stream_map = $type = $url = '';
         parse_str($videoInfo);
@@ -54,6 +55,10 @@ class Downloader {
             if ($videoSize == '0B') {
                 continue;
             }
+            if ($requireType !== '' && $requireType !== $avail_formats[$i]['type']) {
+                continue;
+            }
+
             $directlink = explode('.googlevideo.com/', $avail_formats[$i]['url']);
             $directlink = 'http://redirector.googlevideo.com/' . $directlink[1] . '';
             $data['type'] = $avail_formats[$i]['type'];
@@ -79,12 +84,12 @@ class Downloader {
             parse_str($format);
             $type = explode(';', $type);
             $data = array(
-                'itag'=>$itag,
-                'quality'=>$quality,
+                'itag' => $itag,
+                'quality' => $quality,
                 'type' => $type[0],
                 'url' => urldecode($url) . '&signature=' . $sig
             );
-            
+
             parse_str(urldecode($url));
             $data['expires'] = date("G:i:s T", $expire);
             $data['ipbits'] = $ipbits;
